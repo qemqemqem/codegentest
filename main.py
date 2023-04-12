@@ -34,7 +34,7 @@ def generate_code(question="", model="gpt-3.5-turbo", n=1, temperature=0.0, max_
 
 
 def pull_out_code(text):
-    # This assumes that the code is the first block of code in the text.
+    # This assumes that the code is the first block of code in the text. # TODO Need to do a better job pulling it out
     lines = text.splitlines()
     code = ""
     found_code = False
@@ -63,7 +63,7 @@ if __name__ == '__main__':
     # y = 3
     # print(x + y)
     #     """
-    code = generate_code("Write a program to print out a chess board in ASCII with the pieces in random positions.")
+    code = generate_code("Write a program to print out a chess board in ASCII.")
     # print(f"Got response: {code}")
     code = pull_out_code(code)
     print(f"Got code:")
