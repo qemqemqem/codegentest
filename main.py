@@ -2,7 +2,7 @@ import os
 import time
 
 import openai
-from langchain.utilities import PythonREPL
+from langchain import OpenAI
 
 # Set up your API key for OpenAI
 openai.api_key = os.environ["OPENAI_API_KEY"]
@@ -58,12 +58,10 @@ def run_code(code):
 
 
 if __name__ == '__main__':
-    #     code = """
-    # x = 42
-    # y = 3
-    # print(x + y)
-    #     """
-    code = generate_code("Write a program to print out a chess board in ASCII.")
+    task_gen_llm = OpenAI(temperature=1.0)
+    task = task_gen_llm("I'm a beginner who's learning to code in Python. Give me a simple assignment to get started.")
+    print(f"Task: {task}")
+    code = generate_code(task)
     # print(f"Got response: {code}")
     code = pull_out_code(code)
     print(f"Got code:")
@@ -76,6 +74,8 @@ if __name__ == '__main__':
     else:
         print('Results:', results)
 
-    python_repl = PythonREPL()
-    python_repl.run(code)
-    print('Results:', python_repl.locals)
+    # python_repl = PythonREPL()
+    # python_repl.run(code)
+    # print('Results:', python_repl.locals)
+    # if 'error' in python_repl.locals:
+    #     print('Error:', python_repl.locals['error'])
