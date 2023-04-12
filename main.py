@@ -1,8 +1,6 @@
-# noinspection PyUnresolvedReferences
 import os
-import random
-import string
 import time
+from unittest.mock import patch
 
 import openai
 from langchain import OpenAI
@@ -10,8 +8,12 @@ from langchain import OpenAI
 # Set up your API key for OpenAI
 openai.api_key = os.environ["OPENAI_API_KEY"]
 
+# Import some common libraries to be used by generated code
+# noinspection PyUnresolvedReferences
+import random
 
-def generate_code(question="", model="gpt-3.5-turbo", n=1, temperature=0.0, max_tokens=256, system_description="You write code. You do not write anything that isn't code.", messages=None):
+
+def generate_code(question="", model="gpt-3.5-turbo", n=1, temperature=0.0, max_tokens=1024, system_description="You write code. You do not write anything that isn't code.", messages=None):
     start_time = time.perf_counter()
     prompt = f"{question} "
     response = openai.ChatCompletion.create(
@@ -32,7 +34,7 @@ def generate_code(question="", model="gpt-3.5-turbo", n=1, temperature=0.0, max_
         ans = response.choices[i].message.content.strip()
         answers.append(ans)
     duration = time.perf_counter() - start_time
-    print(f"Duration: {duration:.2f} seconds: {answers[0][:20]}")
+    # print(f"Duration: {duration:.2f} seconds: {answers[0][:20]}")
     if n == 1:
         return answers[0]
     return answers
@@ -89,8 +91,8 @@ if __name__ == '__main__':
     # exit()
 
     task_gen_llm = OpenAI(temperature=1.0)
-    task = task_gen_llm("I'm a beginner who's learning to code in Python. I'm taking my second class in Python. Give me a simple but whimsical assignment to get started.")
-    print(f"Task: {task}")
+    task = task_gen_llm("I'm a beginner who's learning to code in Python. I'm learning about tree search. Give me a simple but whimsical assignment to get started.")
+    print(f"Task: {task.strip()}\n")
     code = generate_code(task)
     # print(f"Got response: {code}")
     code = pull_out_code(code)
