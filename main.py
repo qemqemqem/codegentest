@@ -1,4 +1,7 @@
+# noinspection PyUnresolvedReferences
 import os
+import random
+import string
 import time
 
 import openai
@@ -35,8 +38,18 @@ def generate_code(question="", model="gpt-3.5-turbo", n=1, temperature=0.0, max_
     return answers
 
 
+def edit_code(code, prompt):
+    response = openai.Edit.create(model="code-davinci-edit-001", input=code, instruction=prompt)
+    return response.choices[0].text
+
+
+def try_fix_code(code, error):
+    prompt = f"I ran this code and got this error:\n\n{error}\n\nPlease fix the code so that it runs without error."
+    return edit_code(code, prompt)
+
+
 def pull_out_code(text):
-    # This assumes that the code is the first block of code in the text. # TODO Need to do a better job pulling it out
+    # This assumes that the code is the first block of code in the text. # TODO Need to do a better job pulling it out, but hopefully the prompt will make it easy.
     lines = text.splitlines()
     code = ""
     found_code = False
@@ -52,29 +65,57 @@ def pull_out_code(text):
 
 
 def run_code(code):
+    def simulate_user_input(input_string, func):
+        with patch('builtins.input', return_value=input_string):
+            return func()
+
     try:
-        exec(code)
+        simulate_user_input("5", lambda: exec(code))
         return locals()
     except Exception as e:
         return {'error': str(e)}
 
 
-if __name__ == '__main__':
-    task_gen_llm = OpenAI(temperature=1.0)
-    task = task_gen_llm("I'm a beginner who's learning to code in Python. Give me a simple but whimsical assignment to get started.")
-    print(f"Task: {task}")
-    code = generate_code(task)
-    # print(f"Got response: {code}")
-    code = pull_out_code(code)
+def print_code(code):
     print(f"Got code:")
     for l in code.splitlines():
         print(f"> {l}")
 
+
+if __name__ == '__main__':
+    # code = "a = blork(5)\nprint(a)"
+    # code = edit_code(code, "Replace blork with a function that adds 5 to the input")
+    # print("Fixed code:", code)
+    # exit()
+
+    task_gen_llm = OpenAI(temperature=1.0)
+    task = task_gen_llm("I'm a beginner who's learning to code in Python. I'm taking my second class in Python. Give me a simple but whimsical assignment to get started.")
+    print(f"Task: {task}")
+    code = generate_code(task)
+    # print(f"Got response: {code}")
+    code = pull_out_code(code)
+    print_code(code)
+    print("\nRunning Code:\n")
+
     locals_from_run = run_code(code)
+    # print('Locals:', dict(filter(lambda x: not x[0] in ["code", "simulate_user_input", "error"], locals_from_run.items())))
+    error = None
     if 'error' in locals_from_run:
-        print('Error:', locals_from_run['error'])
-    else:
-        print('Locals:', dict(filter(lambda x: not x[0] == "code", locals_from_run.items())))
+        error = locals_from_run['error']
+
+    # Handle errors
+    while error is not None:
+        print('Got Error, trying to fix:', error)
+        code = try_fix_code(code, error)
+        print_code(code)
+        locals_from_run = run_code(code)
+        # print('Locals:', dict(filter(lambda x: not x[0] in ["code", "simulate_user_input", "error"], locals_from_run.items())))
+        error = None
+        if 'error' in locals_from_run:
+            error = locals_from_run['error']
+
+    if error is None:
+        print('\nSuccess!')
 
     # python_repl = PythonREPL()
     # python_repl.run(code)
