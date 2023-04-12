@@ -11,6 +11,12 @@ openai.api_key = os.environ["OPENAI_API_KEY"]
 # Import some common libraries to be used by generated code
 # noinspection PyUnresolvedReferences
 import random
+# noinspection PyUnresolvedReferences
+import numpy
+# noinspection PyUnresolvedReferences
+import pandas
+# noinspection PyUnresolvedReferences
+import matplotlib
 
 
 def generate_code(question="", model="gpt-3.5-turbo", n=1, temperature=0.0, max_tokens=1024, system_description="You write code. You do not write anything that isn't code.", messages=None):
@@ -91,7 +97,7 @@ if __name__ == '__main__':
     # exit()
 
     task_gen_llm = OpenAI(temperature=1.0)
-    task = task_gen_llm("I'm a beginner who's learning to code in Python. I'm learning about tree search. Give me a simple but whimsical assignment to get started.")
+    task = task_gen_llm("I'm a beginner who's learning to code in Python. I'm learning about linear algebra in numpy. Give me a simple but fun assignment to get started.")
     print(f"Task: {task.strip()}\n")
     code = generate_code(task)
     # print(f"Got response: {code}")
