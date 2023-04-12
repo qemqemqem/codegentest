@@ -16,6 +16,8 @@ def generate_code(question="", model="gpt-3.5-turbo", n=1, temperature=0.0, max_
         model=model,
         messages=messages if messages is not None else [
             {"role": "system", "content": system_description},
+            {"role": "user", "content": "You are a coding API. You write code with no explanation except comments in the code. After printing out the code, please end. \n\nTo start with, please write a \"Hello world\" program in Python"},
+            {"role": "assistant", "content": "```\nprint(\"Hello, World!\")  # I understand that all comments go here\n```"},
             {"role": "user", "content": prompt},
         ],
         max_tokens=max_tokens,
@@ -59,7 +61,7 @@ def run_code(code):
 
 if __name__ == '__main__':
     task_gen_llm = OpenAI(temperature=1.0)
-    task = task_gen_llm("I'm a beginner who's learning to code in Python. Give me a simple assignment to get started.")
+    task = task_gen_llm("I'm a beginner who's learning to code in Python. Give me a simple but whimsical assignment to get started.")
     print(f"Task: {task}")
     code = generate_code(task)
     # print(f"Got response: {code}")
@@ -68,11 +70,11 @@ if __name__ == '__main__':
     for l in code.splitlines():
         print(f"> {l}")
 
-    results = run_code(code)
-    if 'error' in results:
-        print('Error:', results['error'])
+    locals_from_run = run_code(code)
+    if 'error' in locals_from_run:
+        print('Error:', locals_from_run['error'])
     else:
-        print('Results:', results)
+        print('Locals:', dict(filter(lambda x: not x[0] == "code", locals_from_run.items())))
 
     # python_repl = PythonREPL()
     # python_repl.run(code)
