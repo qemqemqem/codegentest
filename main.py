@@ -18,17 +18,18 @@ import pandas
 # noinspection PyUnresolvedReferences
 import matplotlib
 
+globals_dict = {'__name__': '__main__'}
 
-def generate_code(question="", model="gpt-3.5-turbo", n=1, temperature=0.0, max_tokens=1024, system_description="You write code. You do not write anything that isn't code.", messages=None):
+
+def generate_code(prompt="", model="gpt-3.5-turbo", n=1, temperature=0.0, max_tokens=1024, system_description="You write code. You do not write anything that isn't code.", messages=None):
     start_time = time.perf_counter()
-    prompt = f"{question} "
     response = openai.ChatCompletion.create(
         # https://openai.com/blog/introducing-chatgpt-and-whisper-apis
         model=model,
         messages=messages if messages is not None else [
             {"role": "system", "content": system_description},
-            {"role": "user", "content": "You are a coding API. You write code with no explanation except comments in the code. After printing out the code, please end. \n\nTo start with, please write a \"Hello world\" program in Python"},
-            {"role": "assistant", "content": "```\nprint(\"Hello, World!\")  # I understand that all comments go here\n```"},
+            {"role": "user", "content": "You are a coding API. You write code with no explanation except comments in the code. You write functional code, and then write a small amount of code to use the function(s) you wrote. After printing out the code, please end. \n\nTo start with, please write a \"Hello world\" program in Python"},
+            {"role": "assistant", "content": "```\ndef say_hello():\tprint(\"Hello, World!\")  # I understand that all comments go here\n\nsay_hello()\n```"},
             {"role": "user", "content": prompt},
         ],
         max_tokens=max_tokens,
@@ -52,6 +53,7 @@ def edit_code(code, prompt):
 
 
 def try_fix_code(code, error):
+    # TODO Should maybe incorporate the line number of the error too
     prompt = f"I ran this code and got this error:\n\n{error}\n\nPlease fix the code so that it runs without error."
     return edit_code(code, prompt)
 
@@ -78,10 +80,30 @@ def run_code(code):
             return func()
 
     try:
-        simulate_user_input("5", lambda: exec(code))
+        print("\033[94m\033[1m")  # Blue
+        simulate_user_input("5", lambda: exec(code, globals_dict))
+        print("\033[0m\033[0m")
         return locals()
     except Exception as e:
         return {'error': str(e)}
+
+
+def add_test(code):
+    prompt = f"I have this code that I'd like to add tests to:\n\n{code}\n\nPlease add a test or tests for the code."
+    tests = generate_code(prompt)
+    tests = pull_out_code(tests)
+    print(f"\nGot tests: \n{tests}")
+    # Run test and see if it passes
+    results = run_code(code + "\n\n" + tests)
+    # print(results)
+    # # Determine whether tests passed or failed
+    if 'error' in results:
+        print('Tests failed, trying to fix them')
+    #     # Tests failed, so try to fix them
+    #     tests = try_fix_code(tests, results['error'])
+    #     print(f"Got fixed tests: {tests}")
+    #     results = run_code(code + "\n\n" + tests)
+    #     print(results)
 
 
 def print_code(code):
@@ -91,11 +113,6 @@ def print_code(code):
 
 
 if __name__ == '__main__':
-    # code = "a = blork(5)\nprint(a)"
-    # code = edit_code(code, "Replace blork with a function that adds 5 to the input")
-    # print("Fixed code:", code)
-    # exit()
-
     task_gen_llm = OpenAI(temperature=1.0)
     task = task_gen_llm("I'm a beginner who's learning to code in Python. I'm learning about linear algebra in numpy. Give me a simple but fun assignment to get started.")
     print(f"Task: {task.strip()}\n")
@@ -117,10 +134,14 @@ if __name__ == '__main__':
         code = try_fix_code(code, error)
         print_code(code)
         locals_from_run = run_code(code)
-        # print('Locals:', dict(filter(lambda x: not x[0] in ["code", "simulate_user_input", "error"], locals_from_run.items())))
         error = None
         if 'error' in locals_from_run:
             error = locals_from_run['error']
+        # Sleep 500ms
+        time.sleep(0.5)
+
+    # Add tests
+    add_test(code)
 
     if error is None:
         print('\nSuccess!')
