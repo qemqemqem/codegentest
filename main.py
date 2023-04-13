@@ -117,6 +117,8 @@ def add_test(code):
     #     print(f"Got fixed tests: {tests}")
     #     results = run_code(code + "\n\n" + tests)
     #     print(results)
+    else:
+        print('Tests passed')
 
 
 def print_code(code):
