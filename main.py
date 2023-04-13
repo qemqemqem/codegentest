@@ -1,3 +1,6 @@
+# IMPORTANT!
+# Run `pip install openai langchain numpy pandas matplotlib pygame` to install these libraries
+
 import io
 import os
 import sys
@@ -19,6 +22,8 @@ import numpy
 import pandas
 # noinspection PyUnresolvedReferences
 import matplotlib
+# noinspection PyUnresolvedReferences
+import pygame
 
 globals_dict = {'__name__': '__main__'}
 
@@ -129,7 +134,7 @@ def print_code(code):
 
 if __name__ == '__main__':
     task_gen_llm = OpenAI(temperature=1.0)
-    task = task_gen_llm("I'm a beginner who's learning to code in Python. I'm learning about linear algebra in numpy. Give me a simple but fun assignment to get started.")
+    task = task_gen_llm("I'm a beginner who's learning to code in Python and pygame. Give me a simple and easy assignment to get started learning to make a simple simulation.")
     print(f"Task: {task.strip()}\n")
     code = generate_code(task)
     # print(f"Got response: {code}")
