@@ -1,4 +1,6 @@
+import io
 import os
+import sys
 import time
 from unittest.mock import patch
 
@@ -80,24 +82,35 @@ def run_code(code):
             return func()
 
     try:
+        # Redirect stdout to a string buffer
+        buf = io.StringIO()
+        old_stdout = sys.stdout
+        sys.stdout = buf
+
         print("\033[94m\033[1m")  # Blue
         simulate_user_input("5", lambda: exec(code, globals_dict))
         print("\033[0m\033[0m")
-        return locals()
+
+        # Restore stdout and get the output
+        sys.stdout = old_stdout
+        output = buf.getvalue()
+        return output, locals()
     except Exception as e:
-        return {'error': str(e)}
+        return "", {'error': str(e)}
 
 
 def add_test(code):
-    prompt = f"I have this code that I'd like to add tests to:\n\n{code}\n\nPlease add a test or tests for the code."
+    prompt = f"I have this code that I'd like to add tests to:\n\n{code}\n\nPlease add a test or tests for the code. Do not use a testing library, just def functions."
     tests = generate_code(prompt)
     tests = pull_out_code(tests)
     print(f"\nGot tests: \n{tests}")
     # Run test and see if it passes
-    results = run_code(code + "\n\n" + tests)
+    print("\nRunning tests:")
+    output, results = run_code(code + "\n\n" + tests)
+    print(output)
     # print(results)
     # # Determine whether tests passed or failed
-    if 'error' in results:
+    if 'error' in results or "AssertionError" in output:
         print('Tests failed, trying to fix them')
     #     # Tests failed, so try to fix them
     #     tests = try_fix_code(tests, results['error'])
@@ -122,7 +135,8 @@ if __name__ == '__main__':
     print_code(code)
     print("\nRunning Code:\n")
 
-    locals_from_run = run_code(code)
+    output, locals_from_run = run_code(code)
+    print(output)
     # print('Locals:', dict(filter(lambda x: not x[0] in ["code", "simulate_user_input", "error"], locals_from_run.items())))
     error = None
     if 'error' in locals_from_run:
@@ -133,7 +147,8 @@ if __name__ == '__main__':
         print('Got Error, trying to fix:', error)
         code = try_fix_code(code, error)
         print_code(code)
-        locals_from_run = run_code(code)
+        output, locals_from_run = run_code(code)
+        print(output)
         error = None
         if 'error' in locals_from_run:
             error = locals_from_run['error']
