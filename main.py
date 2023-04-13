@@ -1,5 +1,6 @@
 # IMPORTANT!
 # Run `pip install openai langchain numpy pandas matplotlib pygame` to install these libraries
+# You also need to set a OPENAI_API_KEY environment variable to your OpenAI API key
 
 import io
 import os
