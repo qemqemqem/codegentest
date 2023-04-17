@@ -15,44 +15,39 @@ from langchain import OpenAI
 openai.api_key = os.environ["OPENAI_API_KEY"]
 
 # Import some common libraries to be used by generated code
-# noinspection PyUnresolvedReferences
-import random
-# noinspection PyUnresolvedReferences
-import numpy
-# noinspection PyUnresolvedReferences
-import pandas
-# noinspection PyUnresolvedReferences
-import matplotlib
-# noinspection PyUnresolvedReferences
-import pygame
+import random  # noqa
+import numpy  # noqa
+import pandas  # noqa
+import matplotlib  # noqa
+import pygame  # noqa
 
 globals_dict = {'__name__': '__main__'}
 
 
-def generate_code(prompt="", model="gpt-3.5-turbo", n=1, temperature=0.0, max_tokens=1024, system_description="You write code. You do not write anything that isn't code.", messages=None):
-    start_time = time.perf_counter()
-    response = openai.ChatCompletion.create(
-        # https://openai.com/blog/introducing-chatgpt-and-whisper-apis
-        model=model,
-        messages=messages if messages is not None else [
-            {"role": "system", "content": system_description},
-            {"role": "user", "content": "You are a coding API. You write code with no explanation except comments in the code. You write functional code, and then write a small amount of code to use the function(s) you wrote. After printing out the code, please end. \n\nTo start with, please write a \"Hello world\" program in Python"},
-            {"role": "assistant", "content": "```\ndef say_hello():\tprint(\"Hello, World!\")  # I understand that all comments go here\n\nsay_hello()\n```"},
-            {"role": "user", "content": prompt},
-        ],
-        max_tokens=max_tokens,
-        temperature=temperature,
-        n=n,
-    )
-    answers = []
-    for i in range(n):
-        ans = response.choices[i].message.content.strip()
-        answers.append(ans)
+def generate_code(prompt="", model="gpt-3.5-turbo", temperature=0.0, max_tokens=1024, system_description="You write code. You do not write anything that isn't code.", messages=None):
+    code = ""
+    while code == "":
+        start_time = time.perf_counter()
+        response = openai.ChatCompletion.create(
+            # https://openai.com/blog/introducing-chatgpt-and-whisper-apis
+            model=model,
+            messages=messages if messages is not None else [
+                {"role": "system", "content": system_description},
+                {"role": "user", "content": "You are a coding API. You write code with no explanation except comments in the code. You write functional code, and then write a small amount of code to use the function(s) you wrote. After printing out the code, please end. \n\nTo start with, please write a \"Hello world\" program in Python"},
+                {"role": "assistant", "content": "```\ndef say_hello():\tprint(\"Hello, World!\")  # I understand that all comments go here\n\nsay_hello()\n```"},
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=max_tokens,
+            temperature=temperature,
+            n=1,
+        )
+        code = response.choices[0].message.content.strip()
+        temperature += 0.2  # If we iterate, get more random
+        if code == "":
+            print("Got empty code, trying again")
     duration = time.perf_counter() - start_time
     # print(f"Duration: {duration:.2f} seconds: {answers[0][:20]}")
-    if n == 1:
-        return answers[0]
-    return answers
+    return code
 
 
 def edit_code(code, prompt):
@@ -135,7 +130,7 @@ def print_code(code):
 
 if __name__ == '__main__':
     task_gen_llm = OpenAI(temperature=1.0)
-    task = task_gen_llm("I'm a beginner who's learning to code in Python and pygame. Give me a simple and easy assignment to get started learning to make a simple simulation.")
+    task = task_gen_llm("I'm learning to program, and I'm studying for a test about cellular automata. Please give me a task to do that involves cellular automata. I'd like to render the simulation in a pygame window.")
     print(f"Task: {task.strip()}\n")
     code = generate_code(task)
     # print(f"Got response: {code}")
