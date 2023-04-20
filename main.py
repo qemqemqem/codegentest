@@ -12,8 +12,6 @@ openai.api_key = os.environ["OPENAI_API_KEY"]
 
 from gen_code import *
 
-globals_dict = {'__name__': '__main__'}
-
 if __name__ == '__main__':
     task_gen_llm = OpenAI(temperature=1.0)
     task = task_gen_llm("I'm learning to program videogames in pygame. Please give me a simple programming task.")
