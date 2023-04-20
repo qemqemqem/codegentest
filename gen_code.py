@@ -40,20 +40,30 @@ def generate_code(prompt="", model="gpt-3.5-turbo", temperature=0.0, max_tokens=
     return code
 
 
-def edit_code(code, prompt):
-    response = openai.Edit.create(model="code-davinci-edit-001", input=code, instruction=prompt)
-    return response.choices[0].text
+def edit_code(code, prompt, model="code-davinci-edit-001"):
+    if model == "code-davinci-edit-001":
+        for _ in range(5):
+            try:
+                response = openai.Edit.create(model="code-davinci-edit-001", input=code, instruction=prompt)
+                return response.choices[0].text
+            except openai.error.APIError as e:
+                print("Got error from OpenAI:", e)
+                time.sleep(1)
+    else:
+        # Assume it's GPT 3 or 4
+        prompt = f"I ran this code:\n\n```\n{code}\n```\n\n{prompt}"
+        return pull_out_code(generate_code(prompt, model=model))
 
 
-def try_fix_code(code, error):
+def try_fix_code(code, error, model="code-davinci-edit-001"):
     # TODO Should maybe incorporate the line number of the error too
-    prompt = f"I ran this code and got this error:\n\n{error}\n\nPlease fix the code so that it runs without error."
-    return edit_code(code, prompt)
+    prompt = f"I got this error:\n\n{error}\n\nPlease fix the code so that it runs without error."
+    return edit_code(code, prompt, model)
 
 
-def try_incorporate_user_feedback(code, feedback):
-    prompt = f"I ran that code, but {feedback}. Please fix."
-    return edit_code(code, prompt)
+def try_incorporate_user_feedback(code, feedback, model="code-davinci-edit-001"):
+    prompt = f"{feedback}. Please incorporate this feedback into the code."
+    return edit_code(code, prompt, model)
 
 
 def pull_out_code(text):

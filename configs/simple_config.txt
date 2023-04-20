@@ -1,0 +1,8 @@
+Name: Learning Numpy
+Technology: numpy
+Description: I'm learning to program, and I'd like you to give me a simple task to help me learn. Please give me a task that involves matrices in numpy Something funny and whimsical.
+use_task_gen: True
+auto_debug: True
+auto_test: False
+model: gpt-3.5-turbo
+user_review: True

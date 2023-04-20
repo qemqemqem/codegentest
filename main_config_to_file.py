@@ -5,7 +5,8 @@ import difflib
 import os
 
 import openai
-from langchain import OpenAI
+from langchain.chat_models import ChatOpenAI
+from langchain.schema import HumanMessage
 
 from utils.config_loader import Config
 from utils.project_saver import save_file, format_file_contents
@@ -19,13 +20,13 @@ from gen_code import *
 
 if __name__ == '__main__':
     # Load from config file
-    config = Config('game_config.txt')
+    config = Config('configs/simple_config.txt')
     print(f"Got Config: {config.__dict__}")
 
     # Create a task to work on
     if config.use_task_gen:
-        task_gen_llm = OpenAI(temperature=1.0)
-        task = task_gen_llm(config.description)
+        task_gen_llm = ChatOpenAI(temperature=1.0, model_name=config.model)
+        task = task_gen_llm([HumanMessage(content=config.description)]).content
         print(f"Task: {task.strip()}\n")
     else:
         task = config.description
@@ -34,7 +35,7 @@ if __name__ == '__main__':
     task_done = False
 
     # Generate code
-    code = generate_code(task)
+    code = generate_code(task, model=config.model)
     code = pull_out_code(code)
     print_code(code)
 
@@ -51,7 +52,7 @@ if __name__ == '__main__':
             # Handle errors
             while error is not None:
                 print('Got Error, trying to fix:', error)
-                code = try_fix_code(code, error)
+                code = try_fix_code(code, error, model=config.model)
                 print_code(code)
                 output, locals_from_run = run_code(code)
                 print(output)
@@ -74,7 +75,7 @@ if __name__ == '__main__':
                 task_done = True
             else:
                 print("Editing code...")
-                new_code = try_incorporate_user_feedback(code, user_input)
+                new_code = try_incorporate_user_feedback(code, user_input, model=config.model)
                 print(f"Got new code: {code}")
                 # Compute the difference between the two codes
                 diff = difflib.ndiff(code.splitlines(keepends=True), new_code.splitlines(keepends=True))
