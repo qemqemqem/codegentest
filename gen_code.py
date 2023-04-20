@@ -51,6 +51,11 @@ def try_fix_code(code, error):
     return edit_code(code, prompt)
 
 
+def try_incorporate_user_feedback(code, feedback):
+    prompt = f"I ran that code, but {feedback}. Please fix."
+    return edit_code(code, prompt)
+
+
 def pull_out_code(text):
     # This assumes that the code is the first block of code in the text. # TODO Need to do a better job pulling it out, but hopefully the prompt will make it easy.
     lines = text.splitlines()

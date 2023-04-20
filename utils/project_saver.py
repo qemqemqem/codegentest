@@ -12,7 +12,7 @@ def save_file(project_name, file_name, contents):
 
 def format_file_contents(prompt, code):
     fc = ""
-    for line in prompt.split("\n"):
+    for line in prompt.strip().split("\n"):
         fc += "# " + line + "\n"
     fc += "\n"
     fc += code
