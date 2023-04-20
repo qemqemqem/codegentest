@@ -1,7 +1,7 @@
-Name: Cellular Simulation
+Name: Cellular Simulation 2
 Technology: pygame
-Description: A cellular automata simulation similar to langton's ants or turmites. Create new rules. Please use pygame.
-use_task_gen: True
+Description: Create a cellular automata simulation similar to langton's ants or turmites. Render with ASCII.
+use_task_gen: False
 auto_debug: True
 auto_test: False
 model: gpt-3.5-turbo

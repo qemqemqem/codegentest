@@ -19,6 +19,7 @@ if __name__ == '__main__':
     code = generate_code(task)
     # print(f"Got response: {code}")
     code = pull_out_code(code)
+    print("Code:\n")
     print_code(code)
     print("\nRunning Code:\n")
 
