@@ -1,0 +1,3 @@
+Name: Cellular Simulation
+Technology: pygame
+Description: A cellular automata simulation similar to langton's ants or turmites. Original rules.

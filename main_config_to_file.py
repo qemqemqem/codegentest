@@ -2,6 +2,8 @@
 # Run `pip install openai langchain numpy pandas matplotlib pygame` to install these libraries
 # You also need to set a OPENAI_API_KEY environment variable to your OpenAI API key
 
+# This is similar to main.py, but it loads a config and also saves code to a file
+
 import os
 
 import openai
@@ -49,9 +51,3 @@ if __name__ == '__main__':
 
     if error is None:
         print('\nSuccess!')
-
-    # python_repl = PythonREPL()
-    # python_repl.run(code)
-    # print('Results:', python_repl.locals)
-    # if 'error' in python_repl.locals:
-    #     print('Error:', python_repl.locals['error'])
